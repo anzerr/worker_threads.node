@@ -1,5 +1,5 @@
 {
-	"name": "thread",
+	"name": "thread.node",
 	"version": "1.0.1",
 	"description": "",
 	"main": "index.js",
@@ -10,7 +10,6 @@
 	"author": "anzerr",
 	"license": "MIT",
 	"devDependencies": {
-		"eslint": "^5.10.0",
 		"eslint-config-basic": "git+ssh://git@github.com/anzerr/eslintrc.git"
 	},
 	"eslintConfig": {
