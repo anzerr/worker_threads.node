@@ -5,6 +5,7 @@ Test to understand how the new 'worker_threads' works with SharedArrayBuffer.
 #### `Install`
 ``` bash
 npm install --save git+https://github.com/anzerr/worker_threads.node.git
+npm install --save @anzerr/thread.node
 ```
 
 ### `Example`
