@@ -68,9 +68,7 @@ class Pool {
 	close() {
 		let wait = [];
 		for (let i in this.__worker) {
-			wait.push(new Promise((resolve) => {
-				this.__worker[i].terminate(resolve);
-			}));
+			wait.push(this.__worker[i].terminate());
 		}
 		return Promise.all(wait);
 	}

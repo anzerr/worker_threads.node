@@ -4,16 +4,31 @@ const ENUM = require('./enum.js'),
 
 const code = `
 const {parentPort} = require('worker_threads'),
-	util = require('./src/util.js');
+	{EOL} = require('os'),
+	util = {
+		deserialize: (serializedThing, knownClasses = []) => {
+			// eslint-disable-next-line no-new-func
+			const evalFn = new Function(...knownClasses.map((t) => t.name), \`"use strict";\${EOL}return (\${serializedThing});\`);
+			return evalFn(...knownClasses);
+		},
+	
+		serialize: (fn) => {
+			try {
+				return JSON.stringify(fn);
+			} catch(e) {
+				return fn.toString();
+			}
+		}
+	};
 
 parentPort.on('message', ({action, payload}) => {
 	if (action === ${ENUM.RUN}) {
 		try {
-			const hydratedData = payload.data && (payload.data instanceof SharedArrayBuffer ? payload.data : Object.assign(util.deserialize(payload.data), payload.rawData));
+			const hydratedData = payload.data && (payload.data instanceof SharedArrayBuffer ? payload.data : Object.assign(JSON.parse(payload.data), payload.rawData));
 			util.deserialize(payload.runnable)(hydratedData).then((result) => {
 				payload.port.postMessage({
 					action: ${ENUM.RESULT},
-					payload: {result: util.serialize(result)}
+					payload: {result: result? util.serialize(result) : null}
 				});
 			});
 		} catch (e) {
@@ -29,13 +44,15 @@ parentPort.on('message', ({action, payload}) => {
 module.exports = {
 	code: code,
 
-	deserialize: (serializedThing, knownClasses = []) => {
-		// eslint-disable-next-line no-new-func
-		const evalFn = new Function(...knownClasses.map((t) => t.name), `"use strict";${EOL}return (${serializedThing});`);
-		return evalFn(...knownClasses);
+	deserialize: (data) => {
+		try {
+			return JSON.parse(data);
+		} catch (e) {
+			return data;
+		}
 	},
 
 	serialize: (fn) => {
-		return fn.toString();
+		return typeof fn === 'function' ?  fn.toString() : JSON.stringify(fn);
 	}
 };
