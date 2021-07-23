@@ -30,6 +30,11 @@ parentPort.on('message', ({action, payload}) => {
 					action: ${ENUM.RESULT},
 					payload: {result: result? util.serialize(result) : null}
 				});
+			}).catch((e) => {
+				payload.port.postMessage({
+					action: ${ENUM.ERROR},
+					payload: {result: util.serialize(e), msg: e.message, error: true}
+				});
 			});
 		} catch (e) {
 			payload.port.postMessage({

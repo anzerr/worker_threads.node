@@ -16,12 +16,20 @@ pool.submit(async (d) => {
 			const path = require('path');
 			b.write(path.resolve(process.cwd()));
 		}, buffer).then((result) => console.log('1', result)),
+		
 		pool.submit(async (d) => {
 			return Buffer.from(d)[0];
 		}, buffer).then((result) => console.log('2', result)),
+
 		pool.submit(async (d) => {
 			return d.data.toString();
-		}, {data: 'egg'}).then((result) => console.log('3', result))
+		}, {data: 'egg'}).then((result) => console.log('3', result)),
+
+		pool.submit(async (d) => {
+			return d.test.test.test;
+		}, {data: 'egg'}).then(() => {
+			throw new Error('4 should have failed');
+		}).catch((err) => console.log('4', err))
 	]);
 }).then(() => {
 	return pool.close();
