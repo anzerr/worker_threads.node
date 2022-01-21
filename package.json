@@ -9,12 +9,7 @@
 	"keywords": [],
 	"author": "anzerr",
 	"license": "MIT",
-	"devDependencies": {
-		"eslint-config-basic": "git+ssh://git@github.com/anzerr/eslintrc.git"
-	},
-	"eslintConfig": {
-		"extends": "eslint-config-basic"
-	},
+	"devDependencies": {},
 	"repository": {
 		"type": "git",
 		"url": "git@github.com:anzerr/worker_threads.node.git"
