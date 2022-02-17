@@ -5,6 +5,8 @@ const {MessageChannel, Worker} = require('worker_threads'),
 
 class Pool {
 
+	TIMEOUT = (1000 * 60);
+
 	constructor(num, options) {
 		this._worker = [];
 		this.__worker = [];
@@ -14,6 +16,32 @@ class Pool {
 			this._worker.push(w);
 			this.__worker.push(w);
 		}
+		this.cache = [];
+		this.think = setInterval(() => {
+			const out = [], now = Date.now();
+			for (const i in this.cache) {
+				if (this.cache[i] && this.cache[i].timeout > now) {
+					out.push(this.cache[i]);
+				}
+			}
+			this.cache = out;
+		}, Pool.TIMEOUT);
+	}
+
+	getFn(fn) {
+		for (const i in this.cache) {
+			if (this.cache[i].fn === fn) {
+				this.cache[i].timeout = Date.now() + Pool.TIMEOUT;
+				return this.cache[i].serialize;
+			}
+		}
+		const serialize = util.serialize(fn);
+		this.cache.push({
+			timeout: Date.now() + Pool.TIMEOUT,
+			fn,
+			serialize
+		});
+		return serialize;
 	}
 
 	submit(fn, data) {
@@ -42,6 +70,8 @@ class Pool {
 			channel.port2.on('message', ({action, payload}) => {
 				if (action === ENUM.RESULT || action === ENUM.ERROR) {
 					this._worker.push(worker);
+					channel.port1.close();
+					channel.port2.close();
 					this.executeNext();
 					if (action === ENUM.RESULT) {
 						resolve(util.deserialize(payload.result));
@@ -59,7 +89,7 @@ class Pool {
 					data: (data instanceof SharedArrayBuffer || !data ? data : util.serialize(data)) || {},
 					port: channel.port1,
 					rawData: rawData,
-					runnable: util.serialize(fn)
+					runnable: this.getFn(fn)
 				}
 			}, [channel.port1]);
 		}
@@ -70,6 +100,7 @@ class Pool {
 		for (let i in this.__worker) {
 			wait.push(this.__worker[i].terminate());
 		}
+		clearImmediate(this.think);
 		return Promise.all(wait);
 	}
 

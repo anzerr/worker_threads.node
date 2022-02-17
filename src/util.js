@@ -47,6 +47,7 @@ parentPort.on('message', ({action, payload}) => {
 `;
 
 module.exports = {
+
 	code: code,
 
 	deserialize: (data) => {
@@ -60,4 +61,5 @@ module.exports = {
 	serialize: (fn) => {
 		return typeof fn === 'function' ?  fn.toString() : JSON.stringify(fn);
 	}
+
 };
